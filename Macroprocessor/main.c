@@ -208,12 +208,12 @@ int read(unsigned char* name) {
 					macro[hash_table_element_number].begin_hash_table = malloc(sizeof(struct hash_table));
 
 					macro[hash_table_element_number].begin_hash_table->begin_code		= NULL;
-					macro[hash_table_element_number].begin_hash_table->begin_hash_table = NULL;
+					macro[hash_table_element_number].begin_hash_table->begin_hash_table 	= NULL;
 					macro[hash_table_element_number].begin_hash_table->begin_def		= NULL;
 
-					macro[hash_table_element_number].begin_hash_table->end_code			= NULL;
+					macro[hash_table_element_number].begin_hash_table->end_code		= NULL;
 					macro[hash_table_element_number].begin_hash_table->end_hash_table	= NULL;
-					macro[hash_table_element_number].begin_hash_table->end_def			= NULL;
+					macro[hash_table_element_number].begin_hash_table->end_def		= NULL;
 
 					macro[hash_table_element_number].begin_hash_table->key = key;
 					memset(macro[hash_table_element_number].begin_hash_table->name, '0', 15);
@@ -228,13 +228,13 @@ int read(unsigned char* name) {
 						current = current->next;
 					}
 					current->next = malloc(sizeof(struct hash_table));
-					current->next->begin_hash_table->begin_code			= NULL;
+					current->next->begin_hash_table->begin_code		= NULL;
 					current->next->begin_hash_table->begin_hash_table	= NULL;
-					current->next->begin_hash_table->begin_def			= NULL;
+					current->next->begin_hash_table->begin_def		= NULL;
 
-					current->next->begin_hash_table->end_code			= NULL;
+					current->next->begin_hash_table->end_code		= NULL;
 					current->next->begin_hash_table->end_hash_table		= NULL;
-					current->next->begin_hash_table->end_def			= NULL;
+					current->next->begin_hash_table->end_def		= NULL;
 
 					current->next->begin_hash_table->key = key;
 					memset(current->next->begin_hash_table->name, '0', 15);
@@ -389,7 +389,7 @@ int read(unsigned char* name) {
 					}
 					
 					if (macro[hash_table_element_number].begin_code == NULL) {
-						macro[hash_table_element_number].begin_code					= malloc(sizeof(struct list_code));
+						macro[hash_table_element_number].begin_code			= malloc(sizeof(struct list_code));
 						macro[hash_table_element_number].begin_code->operator_asm	= malloc(strlen(operator_asm));
 						macro[hash_table_element_number].begin_code->operand		= malloc(strlen(operand));
 						memset(macro[hash_table_element_number].begin_code->operator_asm, '0', strlen(operator_asm));
@@ -473,13 +473,13 @@ void debug_print() {
 
 void main() {
 	for (unsigned int i = 0; i < hash_table_size; i++) {
-		macro[i].begin_code			= NULL;
+		macro[i].begin_code		= NULL;
 		macro[i].begin_hash_table	= NULL;
-		macro[i].begin_def			= NULL;
+		macro[i].begin_def		= NULL;
 
-		macro[i].end_code			= NULL;
+		macro[i].end_code		= NULL;
 		macro[i].end_hash_table		= NULL;
-		macro[i].end_def			= NULL;
+		macro[i].end_def		= NULL;
 
 		macro[i].key = 0;
 		memset(macro[i].name, '0', 15);
