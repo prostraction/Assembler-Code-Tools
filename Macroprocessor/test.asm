@@ -9,3 +9,17 @@ one action
 two saction
 three cocks
 mend
+
+start code
+brub bruh
+bruh: first jopa, jopa, jopa
+bruh: first jopa, jopa, jopa
+bruh: second jopa, jopa, jopa
+bruh: second jopa, jopa, jopa
+bruh: first jopa, jopa, jopa
+bruh: first jopa, jopa, jopa
+bruh: second jopa, jopa, jopa
+bruh: second jopa, jopa, jopa
+bruh: first jopa, jopa, jopa
+bruh: first jopa, jopa, jopa
+end

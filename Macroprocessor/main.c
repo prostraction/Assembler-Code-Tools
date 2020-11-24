@@ -109,8 +109,7 @@ void parse_string(char* buffer, char* label, char* operator_asm, char* operand, 
 	if (pos_comment == 0)
 		pos_comment = strlen(buffer) + 1;
 	short int is_label_only = 1;
-	for (current_element = first_letter; current_element < pos_comment - 1; current_element++)
-	{
+	for (current_element = first_letter; current_element < pos_comment - 1; current_element++){
 		if (buffer[current_element] != ' ' && buffer[current_element] != '\t') {
 			first_letter = current_element;
 			is_label_only = 0;
@@ -208,12 +207,12 @@ int read(unsigned char* name) {
 					macro[hash_table_element_number].begin_hash_table = malloc(sizeof(struct hash_table));
 
 					macro[hash_table_element_number].begin_hash_table->begin_code		= NULL;
-					macro[hash_table_element_number].begin_hash_table->begin_hash_table 	= NULL;
+					macro[hash_table_element_number].begin_hash_table->begin_hash_table = NULL;
 					macro[hash_table_element_number].begin_hash_table->begin_def		= NULL;
 
-					macro[hash_table_element_number].begin_hash_table->end_code		= NULL;
+					macro[hash_table_element_number].begin_hash_table->end_code			= NULL;
 					macro[hash_table_element_number].begin_hash_table->end_hash_table	= NULL;
-					macro[hash_table_element_number].begin_hash_table->end_def		= NULL;
+					macro[hash_table_element_number].begin_hash_table->end_def			= NULL;
 
 					macro[hash_table_element_number].begin_hash_table->key = key;
 					memset(macro[hash_table_element_number].begin_hash_table->name, '0', 15);
@@ -228,13 +227,13 @@ int read(unsigned char* name) {
 						current = current->next;
 					}
 					current->next = malloc(sizeof(struct hash_table));
-					current->next->begin_hash_table->begin_code		= NULL;
+					current->next->begin_hash_table->begin_code			= NULL;
 					current->next->begin_hash_table->begin_hash_table	= NULL;
-					current->next->begin_hash_table->begin_def		= NULL;
+					current->next->begin_hash_table->begin_def			= NULL;
 
-					current->next->begin_hash_table->end_code		= NULL;
+					current->next->begin_hash_table->end_code			= NULL;
 					current->next->begin_hash_table->end_hash_table		= NULL;
-					current->next->begin_hash_table->end_def		= NULL;
+					current->next->begin_hash_table->end_def			= NULL;
 
 					current->next->begin_hash_table->key = key;
 					memset(current->next->begin_hash_table->name, '0', 15);
@@ -389,7 +388,7 @@ int read(unsigned char* name) {
 					}
 					
 					if (macro[hash_table_element_number].begin_code == NULL) {
-						macro[hash_table_element_number].begin_code			= malloc(sizeof(struct list_code));
+						macro[hash_table_element_number].begin_code					= malloc(sizeof(struct list_code));
 						macro[hash_table_element_number].begin_code->operator_asm	= malloc(strlen(operator_asm));
 						macro[hash_table_element_number].begin_code->operand		= malloc(strlen(operand));
 						memset(macro[hash_table_element_number].begin_code->operator_asm, '0', strlen(operator_asm));
@@ -427,8 +426,138 @@ int read(unsigned char* name) {
 	return 1;
 }
 
-void write() {
+void write(char* name_input, char* name_output) {
+	FILE* fp_in;
+	if (!(fp_in = fopen(name_input, "r"))) {
+		printf("Unable to open %s\n", name_input);
+		return;
+	}
+	FILE* fp_out;
+	if (!(fp_out = fopen(name_output, "w"))) {
+		printf("Unable to open %s\n", name_output);
+		return;
+	}
+	// for string parse
+	char buffer[256];
+	char label[15];
+	char operator_asm[15];
+	char operand[100];
+	char comment[100];
+	memset(buffer, 0, sizeof(buffer));
+	memset(label, 0, sizeof(label));
+	memset(operator_asm, 0, sizeof(operator_asm));
+	memset(operand, 0, sizeof(operand));
+	memset(comment, 0, sizeof(comment));
 
+	while (fgets(buffer, 256, fp_in)) {
+		parse_string(buffer, label, operator_asm, operand, comment);
+		// skipping macro definition
+		if (!strcmp(operator_asm, "MACRO") || !strcmp(operator_asm, "macro")) {
+			fprintf(fp_out, ";");
+			fprintf(fp_out, buffer);
+			memset(buffer, 0, sizeof(buffer));
+			memset(label, 0, sizeof(label));
+			memset(operator_asm, 0, sizeof(operator_asm));
+			memset(operand, 0, sizeof(operand));
+			memset(comment, 0, sizeof(comment));
+			while (fgets(buffer, 256, fp_in)) {
+				parse_string(buffer, label, operator_asm, operand, comment);
+				if (!strcmp(operator_asm, "MEND") || !strcmp(operator_asm, "mend")) {
+					fprintf(fp_out, ";");
+					fprintf(fp_out, buffer);
+
+					memset(buffer, 0, sizeof(buffer));
+					memset(label, 0, sizeof(label));
+					memset(operator_asm, 0, sizeof(operator_asm));
+					memset(operand, 0, sizeof(operand));
+					memset(comment, 0, sizeof(comment));
+					break;
+				}
+				memset(buffer, 0, sizeof(buffer));
+				memset(label, 0, sizeof(label));
+				memset(operator_asm, 0, sizeof(operator_asm));
+				memset(operand, 0, sizeof(operand));
+				memset(comment, 0, sizeof(comment));
+			}
+		}
+		// parsing other:
+		// есть метка
+		if (strlen(buffer) > 1) {
+			unsigned short key = key_combine(operator_asm);
+			unsigned int hash_table_element_number = hash(key_combine(operator_asm));
+			if (macro[hash_table_element_number].key != 0) {
+				
+				// есть макроопределение, нет коллизии
+				if (macro[hash_table_element_number].key == key) {
+					fprintf(fp_out, "; ");
+					fprintf(fp_out, label);
+					fprintf(fp_out, ": ");
+					fprintf(fp_out, operator_asm);
+					fprintf(fp_out, " ");
+					fprintf(fp_out, operand);
+					fprintf(fp_out, "\n");
+
+					struct list_code* current_code = macro[hash_table_element_number].begin_code;
+					while (current_code != NULL) {
+												fprintf(fp_out, label);
+						fprintf(fp_out, ": ");
+						fprintf(fp_out, current_code->operator_asm);
+						fprintf(fp_out, " ");
+						fprintf(fp_out, current_code->operand);
+						fprintf(fp_out, "\n");
+						current_code = current_code->next;
+					}
+					free(current_code);
+				}
+				// поиск макроопределения, есть коллизия
+				else {
+					struct hash_table* current_hash = macro[hash_table_element_number].begin_hash_table;
+					while (current_hash != NULL) {
+						if (current_hash->key == key) {
+							fprintf(fp_out, "; ");
+							fprintf(fp_out, label);
+							fprintf(fp_out, ": ");
+							fprintf(fp_out, operator_asm);
+							fprintf(fp_out, " ");
+							fprintf(fp_out, operand);
+							fprintf(fp_out, "\n");
+
+							struct list_code* current_code = current_hash->begin_code;
+							while (current_code != NULL) {
+								fprintf(fp_out, label);
+								fprintf(fp_out, ": ");
+								fprintf(fp_out, current_code->operator_asm);
+								fprintf(fp_out, " ");
+								fprintf(fp_out, current_code->operand);
+								fprintf(fp_out, "\n");
+								current_code = current_code->next;
+							}
+							free(current_code);
+						}
+						current_hash = current_hash->next;
+					}
+					free(current_hash);
+				}
+			}
+			else {
+				if (strlen(label) > 0) {
+					fprintf(fp_out, label);
+					fprintf(fp_out, ": ");
+				}
+				fprintf(fp_out, operator_asm);
+				fprintf(fp_out, " ");
+				fprintf(fp_out, operand);
+				fprintf(fp_out, "\n");
+			}
+			// иначе нет макроопределения
+			printf("%s\n", operator_asm);
+		}
+		memset(buffer, 0, sizeof(buffer));
+		memset(label, 0, sizeof(label));
+		memset(operator_asm, 0, sizeof(operator_asm));
+		memset(operand, 0, sizeof(operand));
+		memset(comment, 0, sizeof(comment));
+	}
 }
 
 void debug_print() {
@@ -473,13 +602,13 @@ void debug_print() {
 
 void main() {
 	for (unsigned int i = 0; i < hash_table_size; i++) {
-		macro[i].begin_code		= NULL;
+		macro[i].begin_code			= NULL;
 		macro[i].begin_hash_table	= NULL;
-		macro[i].begin_def		= NULL;
+		macro[i].begin_def			= NULL;
 
-		macro[i].end_code		= NULL;
+		macro[i].end_code			= NULL;
 		macro[i].end_hash_table		= NULL;
-		macro[i].end_def		= NULL;
+		macro[i].end_def			= NULL;
 
 		macro[i].key = 0;
 		memset(macro[i].name, '0', 15);
@@ -488,6 +617,6 @@ void main() {
 
 	if (read("test.asm")) {
 		debug_print();
-		write();
+		write("test.asm", "m_test.asm");
 	}
 }
