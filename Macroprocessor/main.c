@@ -606,7 +606,7 @@ void main() {
 
 	if (read("test.asm")) {
 		debug_print();
-		write("test.asm", "m_test.asm");
+		write("test.asm", "output.asm");
 	}
 
 	// Очистить память
