@@ -373,9 +373,10 @@ void write(char* name_input, char* name_output) {
 	memset(operator_asm, 0, sizeof(operator_asm));
 	memset(operand, 0, sizeof(operand));
 	memset(comment, 0, sizeof(comment));
+	unsigned short count_of_args = 0;
 
 	while (fgets(buffer, 256, fp_in)) {
-		parse_string(buffer, label, operator_asm, operand, comment);
+		count_of_args = parse_string(buffer, label, operator_asm, operand, comment);
 		// skipping macro definition
 		if (!strcmp(operator_asm, "MACRO") || !strcmp(operator_asm, "macro")) {
 			memset(buffer, 0, sizeof(buffer));
@@ -398,75 +399,85 @@ void write(char* name_input, char* name_output) {
 		// parsing other:
 		//
 		if (strlen(buffer) > 1) {
+			printf("333333333333333333333 %d\n", count_of_args);
 			unsigned short key = key_combine(operator_asm);
 			unsigned int hash_table_element_number = hash(key_combine(operator_asm));
+			bool found = false;
 			if (macro[hash_table_element_number].key != 0) {
 				// есть макроопределение, нет коллизии
+				struct hash_table* current_hash = NULL;
 				if (macro[hash_table_element_number].key == key) {
-					fprintf(fp_out, "; ");
-					fprintf(fp_out, label);
-					fprintf(fp_out, ": ");
-					fprintf(fp_out, operator_asm);
-					fprintf(fp_out, " ");
-					fprintf(fp_out, operand);
-					fprintf(fp_out, "\n");
-
-
-					struct list_code* current_code = macro[hash_table_element_number].begin_code;
-					while (current_code != NULL) {
-						if (current_code->label != NULL) {
-							fprintf(fp_out, current_code->label);
-							fprintf(fp_out, ": ");
-						}
-						fprintf(fp_out, current_code->operator_asm);
-						fprintf(fp_out, " ");
-						fprintf(fp_out, current_code->operand);
-						fprintf(fp_out, "\n");
-						current_code = current_code->next;
-					}
-					free(current_code);
+					found = true;
+					current_hash = &macro[hash_table_element_number];
 				}
 				// поиск макроопределения, есть коллизия
 				else {
-					struct hash_table* current_hash = macro[hash_table_element_number].begin_hash_table;
-					bool found = false;
+					current_hash = macro[hash_table_element_number].begin_hash_table;
 					while (current_hash != NULL) {
-						
+
 						if (current_hash->key == key) {
 							found = true;
-							//printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& %s", op)
-							fprintf(fp_out, "; ");
-							fprintf(fp_out, label);
-							fprintf(fp_out, ": ");
-							fprintf(fp_out, operator_asm);
-							fprintf(fp_out, " ");
-							fprintf(fp_out, operand);
-							fprintf(fp_out, "\n");
-							struct list_code* current_code = current_hash->begin_code;
-							while (current_code != NULL) {
-
-								if (current_code->label != NULL) {
-									fprintf(fp_out, current_code->label);
-									fprintf(fp_out, ": ");
-								}
-								fprintf(fp_out, current_code->operator_asm);
-								fprintf(fp_out, " ");
-								fprintf(fp_out, current_code->operand);
-								fprintf(fp_out, "\n");
-								current_code = current_code->next;
-							}
-							free(current_code);
+							break;
 						}
 						current_hash = current_hash->next;
 					}
+				}
+					if (found) {
+						fprintf(fp_out, "; ");
+						fprintf(fp_out, label);
+						fprintf(fp_out, ": ");
+						fprintf(fp_out, operator_asm);
+						fprintf(fp_out, " ");
+						fprintf(fp_out, operand);
+						fprintf(fp_out, "\n");
+
+						////////////////// 
+						// TO DO OPERAND
+						/////////////////////////////
+
+
+						struct list_code* current_code = current_hash->begin_code;
+						while (current_code != NULL) {
+
+							if (current_code->label != NULL) {
+								fprintf(fp_out, current_code->label);
+								fprintf(fp_out, ": ");
+							}
+							unsigned int index = -1;
+							char* to_be_replaced = malloc(sizeof(char) * strlen(current_code->operand));
+							memset(to_be_replaced, 0, strlen(current_code->operand));
+							for (int i = 0, j = 0, k = 1; i < strlen(current_code->operand); i++) {
+								if (current_code->operand[i] == '$') {
+									index = 0;
+									i++;
+									while (current_code->operand[i] >= '0' && current_code->operand[i] <= '9') {
+										to_be_replaced[j] = current_code->operand[i];
+										index += (current_code->operand[i] - '0') * k;
+										i++; j++; k += 10;
+									}
+									to_be_replaced[j] = '\0';
+								}
+							}
+							printf("2222222222222222222222222222222222		%d		%s\n", index, to_be_replaced);
+							fprintf(fp_out, current_code->operator_asm);
+							fprintf(fp_out, " ");
+							fprintf(fp_out, current_code->operand);
+							fprintf(fp_out, "\n");
+							current_code = current_code->next;
+						}
+						free(current_code);
+					}
 					if (!found) {
+						if (strlen(label) > 0) {
+							fprintf(fp_out, label);
+							fprintf(fp_out, ": ");
+						}
 						fprintf(fp_out, operator_asm);
 						fprintf(fp_out, " ");
 						fprintf(fp_out, operand);
 						fprintf(fp_out, "\n");
 					}
-					free(current_hash);
-				}
+					current_hash = NULL;
 			}
 			else {
 				if (strlen(label) > 0) {
