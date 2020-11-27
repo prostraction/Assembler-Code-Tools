@@ -326,7 +326,11 @@ int read(unsigned char* name) {
 									new_operand[z] = temp_str[k];
 									j++; k++;
 								}
-								j += sizeof(current->formal_operands[i]);
+								while (operand[j] != '\'' && !(operand[j] >= '0' && operand[j] <= '9') && j < strlen(operand)) {
+									j++;
+								}
+								j--;
+								
 							}
 						}
 						new_operand[z++] = '\0';
