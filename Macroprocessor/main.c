@@ -663,6 +663,10 @@ void main() {
 				current_hash = temp;
 				temp = NULL;
 			}
+			else {
+				free(current_hash);
+				current_hash = NULL;
+			}
 		}
 
 	}
