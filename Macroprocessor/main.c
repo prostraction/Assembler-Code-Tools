@@ -608,4 +608,63 @@ void main() {
 		debug_print();
 		write("test.asm", "m_test.asm");
 	}
+
+	// Очистить память
+	for (unsigned int i = 0; i < hash_table_size; i++) {
+		struct hash_table* current_hash = NULL;
+		if (macro[i].begin_hash_table != NULL) {
+			current_hash = macro[i].begin_hash_table;
+		}
+		else {
+			current_hash = &macro[i];
+		}
+		while (current_hash->next != NULL) {
+			if (current_hash->formal_operands != NULL) {
+				for (int i = 0; i < current_hash->count_of_arugments; i++) {
+					if (current_hash->formal_operands[i] != NULL) {
+						free(current_hash->formal_operands[i]);
+						current_hash->formal_operands[i] = NULL;
+					}
+				}
+				free(current_hash->formal_operands);
+				current_hash->formal_operands = NULL;
+			}
+			if (current_hash->begin_code != NULL) {
+				struct list_code* current_code = current_hash->begin_code;
+				struct list_code* by_current_code = current_hash->begin_code;
+				while (current_code != NULL) {
+					if (current_code->next != NULL) {
+						by_current_code = current_code->next;
+					}
+					else {
+						by_current_code = NULL;
+					}
+					current_code->label = NULL;
+					current_code->operand = NULL;
+					current_code->operator_asm = NULL;
+					if (by_current_code != NULL) {
+						free(current_code);
+						current_code = NULL;
+						current_code = by_current_code;
+					}
+					else {
+						current_code = NULL;
+					}
+				}
+			}
+			current_hash->begin_code = NULL;
+			current_hash->count_of_arugments = 0;
+			current_hash->key = 0;
+			
+			if (current_hash->next != NULL) {
+				struct hash_table* temp = current_hash->next;
+				free(current_hash);
+				current_hash = NULL;
+				current_hash = temp;
+				temp = NULL;
+			}
+		}
+
+	}
+
 }
