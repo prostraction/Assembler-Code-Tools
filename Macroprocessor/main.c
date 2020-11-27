@@ -66,9 +66,9 @@ struct hash_table {
 	unsigned short int key;
 
 	char** formal_operands;
-	unsigned short count_of_arugments;
+	unsigned short count_of_arguments;
 	struct list_code* begin_code;
-	struct hash_table* begin_hash_table, * next;
+	struct hash_table* begin_hash_table, *next;
 } macro[hash_table_size];
 
 //
@@ -225,7 +225,7 @@ int read(unsigned char* name) {
 					current->next = malloc(sizeof(struct hash_table));
 					current->next->begin_code = NULL;
 					current->next->begin_hash_table = NULL;
-					current->next->count_of_arugments = 0;
+					current->next->count_of_arguments = 0;
 					current->next->formal_operands = NULL;
 					current->next->key = 0;
 					memset(current->next->name, 0, 15);
@@ -245,7 +245,7 @@ int read(unsigned char* name) {
 			for (int i = 0; i < count_of_args + 1; i++) {
 				current->formal_operands[i] = NULL;
 			}
-			current->count_of_arugments = 0;
+			current->count_of_arguments = 0;
 
 			for (unsigned int prev_size = 0, i = 0; i < strlen(operand); i++) {
 				if (operand[i] == ',' || (i == strlen(operand) - 1)) {
@@ -259,7 +259,7 @@ int read(unsigned char* name) {
 					prev_size = i + 2;
 					current->formal_operands[count] = temp_word;
 					count++;
-					current->count_of_arugments++;
+					current->count_of_arguments++;
 					temp_word = NULL;
 				}
 			}
@@ -305,7 +305,7 @@ int read(unsigned char* name) {
 
 				// сохранение формального параметра в виде $n
 				bool operand_should_be_replaced = false;
-				for (int i = 0; i < current->count_of_arugments; i++) {
+				for (int i = 0; i < current->count_of_arguments; i++) {
 					if (strstr(operand, current->formal_operands[i]) != NULL) {
 						char* temp_str = (char*)malloc(sizeof(char*) * 10);
 						sprintf(temp_str, "$%d\0", i);
@@ -549,9 +549,9 @@ void debug_print() {
 		if (macro[i].key != 0) {
 
 			printf("Arguments: (");
-			for (int j = 0; j < macro->count_of_arugments; j++) {
+			for (int j = 0; j < macro->count_of_arguments; j++) {
 				if (macro[i].formal_operands != NULL)
-					if (j == macro->count_of_arugments - 1)
+					if (j == macro->count_of_arguments - 1)
 						printf("%s", macro[i].formal_operands[j]);
 					else
 						printf("%s, ", macro[i].formal_operands[j]);
@@ -570,9 +570,9 @@ void debug_print() {
 				struct hash_table* current_hash = macro[i].begin_hash_table;
 				while (current_hash != NULL) {
 					printf("Arguments: (");
-					for (int j = 0; j < current_hash->count_of_arugments; j++) {
+					for (int j = 0; j < current_hash->count_of_arguments; j++) {
 						if (current_hash->formal_operands != NULL) {
-							if (j == current_hash->count_of_arugments - 1)
+							if (j == current_hash->count_of_arguments - 1)
 								printf("%s", macro[i].formal_operands[j]);
 							else
 								printf("%s, ", macro[i].formal_operands[j]);
@@ -624,7 +624,7 @@ void main() {
 		}
 		while (current_hash->next != NULL) {
 			if (current_hash->formal_operands != NULL) {
-				for (int i = 0; i < current_hash->count_of_arugments; i++) {
+				for (int i = 0; i < current_hash->count_of_arguments; i++) {
 					if (current_hash->formal_operands[i] != NULL) {
 						free(current_hash->formal_operands[i]);
 						current_hash->formal_operands[i] = NULL;
@@ -657,7 +657,7 @@ void main() {
 				}
 			}
 			current_hash->begin_code = NULL;
-			current_hash->count_of_arugments = 0;
+			current_hash->count_of_arguments = 0;
 			current_hash->key = 0;
 			
 			if (current_hash->next != NULL) {
