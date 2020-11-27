@@ -498,6 +498,14 @@ void write(char* name_input, char* name_output) {
 						current_code = current_code->next;
 					}
 					free(current_code);
+					if (fact_operands != NULL) {
+						for (int i = 0; i < count_of_args + 1; i++) {
+							if (fact_operands[i] != NULL) {
+								free(fact_operands[i]);
+							}
+						}
+						free(fact_operands);
+					}
 				}
 				// нет макроопределения
 				if (!found) {
