@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 #define bool char
 #define true 1
@@ -18,7 +19,7 @@ name	-- фактический параметр
 
 /*
 macro_name MACRO	&macro_name1, &macro_name2, ..., &macro_nameN
-	
+
 MEND
 */
 
@@ -55,9 +56,9 @@ unsigned int hash(unsigned short key) {
 
 // hash table structure
 struct list_code {
-	unsigned char *label;
-	unsigned char *operator_asm;
-	unsigned char *operand;
+	unsigned char* label;
+	unsigned char* operator_asm;
+	unsigned char* operand;
 	struct list_code* next;
 };
 struct hash_table {
@@ -66,8 +67,8 @@ struct hash_table {
 
 	char** formal_operands;
 	unsigned short count_of_arugments;
-	struct list_code		*begin_code;
-	struct hash_table		*begin_hash_table, *next;
+	struct list_code* begin_code;
+	struct hash_table* begin_hash_table, * next;
 } macro[hash_table_size];
 
 //
@@ -107,7 +108,7 @@ unsigned short parse_string(char* buffer, char* label, char* operator_asm, char*
 	if (pos_comment == 0)
 		pos_comment = strlen(buffer) + 1;
 	short int is_label_only = 1;
-	for (current_element = first_letter; current_element < pos_comment - 1; current_element++){
+	for (current_element = first_letter; current_element < pos_comment - 1; current_element++) {
 		if (buffer[current_element] != ' ' && buffer[current_element] != '\t') {
 			first_letter = current_element;
 			is_label_only = 0;
@@ -186,27 +187,28 @@ int read(unsigned char* name) {
 	char operator_asm[15];
 	char operand[100];
 	char comment[100];
-	memset(buffer, 0,	sizeof(buffer));
-	memset(label, 0,	sizeof(label));
+	memset(buffer, 0, sizeof(buffer));
+	memset(label, 0, sizeof(label));
 	memset(operator_asm, 0, sizeof(operator_asm));
 	memset(operand, 0, sizeof(operand));
 	memset(comment, 0, sizeof(comment));
 
 	while (fgets(buffer, 256, fp)) {
 		unsigned short count_of_args = parse_string(buffer, label, operator_asm, operand, comment);
-		//
 		if (!strcmp(operator_asm, "MACRO") || !strcmp(operator_asm, "macro")) {
 			int count = 0;
 			printf("%__________ %d: \n", count_of_args);
 			unsigned short key = key_combine(label);
 			unsigned int hash_table_element_number = hash(key);
 			// обработка коллизии
+			struct hash_table* current = NULL;
 			if (macro[hash_table_element_number].key != 0) {
-				struct hash_table* current = NULL;
+
 				// коллизия встретилась впервые
 				if (macro[hash_table_element_number].begin_hash_table == NULL) {
+					/////////////////////////// *
 					macro[hash_table_element_number].begin_hash_table = malloc(sizeof(struct hash_table));
-					macro[hash_table_element_number].begin_hash_table->begin_code		= NULL;
+					macro[hash_table_element_number].begin_hash_table->begin_code = NULL;
 					macro[hash_table_element_number].begin_hash_table->begin_hash_table = NULL;
 					macro[hash_table_element_number].begin_hash_table->key = key;
 					memset(macro[hash_table_element_number].begin_hash_table->name, '0', 15);
@@ -220,276 +222,127 @@ int read(unsigned char* name) {
 					while (current->next != NULL) {
 						current = current->next;
 					}
-					//current->next = malloc(sizeof(struct hash_table));
-					//if (current->next->begin_hash_table == NULL) {
-						//current->next->begin_hash_table = malloc(sizeof(struct hash_table));
-					//}
-					//current->next->begin_hash_table->begin_code		= NULL;
-					//current->next->begin_hash_table->begin_hash_table	= NULL;
-
-					//current->next->begin_hash_table->key = key;
-					//memset(current->next->begin_hash_table->name, '0', 15);
-					//current = current->next;
-					//current->next = NULL;
-					
+					current->next = NULL;
+					current->next = malloc(sizeof(struct hash_table));
+					current->next->begin_code = NULL;
+					current->next->begin_hash_table = NULL;
+					current->next->count_of_arugments = 0;
+					current->next->formal_operands = NULL;
+					current->next->key = 0;
+					//current->next->name = NULL;
+					memset(current->next->name, 0, 15);
+					current = current->next;
+					current->next = NULL;
 				}
-				////////////////////////////////////////////////////////////////////////////////////
-				strcpy_s(current->name, strlen(label) + 1, label);
-				unsigned int size_of_operand;
-				/////////////////////////////////////////////////////////////////////////////////////
-				current->formal_operands = (char**)malloc(sizeof(char*) * (count_of_args + 1));
-				for (int i = 0; i < 10; i++) {
-					current->formal_operands[i] = NULL;
-				}
-				current->count_of_arugments = 0;
-				char* temp_word = NULL;
-				
-				for (unsigned int prev_size = 0, i = 0; i < strlen(operand); i++) {
-					if (operand[i] == ',' || (i == strlen(operand) - 1)) {
-						size_of_operand = (i == strlen(operand) - 1) ? (i - prev_size + 1) : (i - prev_size);
-						temp_word = (char*)malloc(size_of_operand + 1);
-						memset(temp_word, '0', size_of_operand + 1);
-						for (int k = 0, j = prev_size; k < size_of_operand; k++, j++) {
-							temp_word[k] = operand[j];
-						}
-						temp_word[size_of_operand] = '\0';
-						prev_size = i + 2;
-						current->formal_operands[count] = temp_word;
-						printf("%s nnnnnnnnnnnnnnnnnnnnnnn\n", current->formal_operands[count]);
-						count++;
-						current->count_of_arugments++;
-					}
-				}
-				memset(label, 0, sizeof(label));
-				memset(operator_asm, 0, sizeof(operator_asm));
-				memset(operand, 0, sizeof(operand));
-				memset(comment, 0, sizeof(comment));
-
-				while (fgets(buffer, 256, fp)) {
-					parse_string(buffer, label, operator_asm, operand, comment);
-					if (!strcmp(operator_asm, "MEND") || !strcmp(operator_asm, "mend")) {
-						break;
-					}
-					// код добавляется впервые
-					if (current->begin_code == NULL) {
-						current->begin_code = malloc(sizeof(struct list_code));
-						current->begin_code->label = NULL;
-						if (strlen(label) > 1) {
-							current->begin_code->label = malloc(strlen(label));
-						}
-						current->begin_code->operator_asm = malloc(strlen(operator_asm));
-						if (strlen(label) > 1) {
-							memset(current->begin_code->label, '0', strlen(label));
-						}
-						memset(current->begin_code->operator_asm, '0', strlen(operator_asm));
-						if (strlen(label) > 1) {
-							strcpy_s(current->begin_code->label, strlen(label) + 1, label);
-						}
-						strcpy_s(current->begin_code->operator_asm, strlen(operator_asm) + 1, operator_asm);
-						current->begin_code->next = NULL;
-
-						bool operand_should_be_replaced = false;
-						for (int i = 0; i < current->count_of_arugments; i++) {
-							if (strstr(operand, current->formal_operands[i]) != NULL) {
-								printf("triggered\n");
-								char* temp_str = (char*)malloc(sizeof(char*) * 10);
-								sprintf(temp_str, "$%d", i);
-								current->begin_code->operand = temp_str;
-								operand_should_be_replaced = true;
-								break;
-							}
-						}
-						if (!operand_should_be_replaced) {
-							current->begin_code->operand = malloc(strlen(operand));
-							memset(current->begin_code->operand, '0', strlen(operand));
-							strcpy_s(current->begin_code->operand, strlen(operand) + 1, operand);
-						}
-					}
-					// код уже есть в этом макроопределении
-					else {
-						struct list_code* current_code = current->begin_code;
-						while (current_code->next != NULL) {
-							current_code = current_code->next;
-						}
-
-						current_code->next = malloc(sizeof(struct list_code));
-						current_code->next->label = NULL;
-						if (strlen(label) > 1)
-							current_code->next->label = malloc(strlen(label));
-						current_code->next->operator_asm = malloc(strlen(operator_asm));
-						current_code->next->operand = malloc(strlen(operand));
-
-						if (strlen(label) > 1)
-							memset(current_code->next->label, '0', strlen(label));
-						memset(current_code->next->operator_asm, '0', strlen(operator_asm));
-						memset(current_code->next->operand, '0', strlen(operand));
-
-						if (strlen(label) > 1)
-							strcpy_s(current_code->next->label, strlen(label) + 1, label);
-						strcpy_s(current_code->next->operator_asm, strlen(operator_asm) + 1, operator_asm);
-						strcpy_s(current_code->next->operand, strlen(operand) + 1, operand);
-						current_code->next->next = NULL;
-
-						bool operand_should_be_replaced = false;
-						for (int i = 0; i < current->count_of_arugments; i++) {
-							if (strstr(operand, current->formal_operands[i]) != NULL) {
-								printf("triggered\n");
-								char* temp_str = (char*)malloc(sizeof(char*) * 10);
-								sprintf(temp_str, "$%d", i);
-								current->begin_code->operand = temp_str;
-								operand_should_be_replaced = true;
-								break;
-							}
-						}
-						if (!operand_should_be_replaced) {
-							current->begin_code->operand = malloc(strlen(operand));
-							memset(current->begin_code->operand, '0', strlen(operand));
-							strcpy_s(current->begin_code->operand, strlen(operand) + 1, operand);
-						}
-					}
-
-					memset(label, 0, sizeof(label));
-					memset(operator_asm, 0, sizeof(operator_asm));
-					memset(operand, 0, sizeof(operand));
-					memset(comment, 0, sizeof(comment));
-
-				}
-				////////////////////////////////////////////////////////////////////////////////////
 			}
 			else {
-				strcpy_s(macro[hash_table_element_number].name, strlen(label) + 1, label);
-				macro[hash_table_element_number].key = key;
-				unsigned int size_of_operand;
-				bool type = false;
-				macro[hash_table_element_number].formal_operands = NULL;
-				macro[hash_table_element_number].formal_operands = (char**)realloc(macro[hash_table_element_number].formal_operands, sizeof(char*) * (count_of_args + 1));
+				current = &macro[hash_table_element_number];
+			}
+			////////////////////////////////////////////////////////////////////////////////////
+			strcpy_s(current->name, strlen(label) + 1, label);
+			current->key = key;
+			unsigned int size_of_operand;
+			/////////////////////////////////////////////////////////////////////////////////////
+			current->formal_operands = NULL;
+			current->formal_operands = (char**)realloc(current->formal_operands, sizeof(char*) * (count_of_args + 1));
+			///////////////////////////////////////// ??????????????
+			for (int i = 0; i < count_of_args + 1; i++) {
+				current->formal_operands[i] = NULL;
+			}
+			current->count_of_arugments = 0;
+
+
+			for (unsigned int prev_size = 0, i = 0; i < strlen(operand); i++) {
+				if (operand[i] == ',' || (i == strlen(operand) - 1)) {
+					size_of_operand = (i == strlen(operand) - 1) ? (i - prev_size + 1) : (i - prev_size);
+					char* temp_word = (char*)malloc(sizeof(char) * (size_of_operand + 1));
+					memset(temp_word, '0', size_of_operand + 1);
+					for (int k = 0, j = prev_size; k < size_of_operand; k++, j++) {
+						temp_word[k] = operand[j];
+					}
+					temp_word[size_of_operand] = '\0';
+					prev_size = i + 2;
+					current->formal_operands[count] = temp_word;
+					printf("%s nnnnnnnnnnnnnnnnnnnnnnn\n", current->formal_operands[count]);
+					count++;
+					current->count_of_arugments++;
+					//free(temp_word);
+					temp_word = NULL;
+
+				}
+			}
+			memset(label, 0, sizeof(label));
+			memset(operator_asm, 0, sizeof(operator_asm));
+			memset(operand, 0, sizeof(operand));
+			memset(comment, 0, sizeof(comment));
+
+			struct list_code* current_code = NULL;
+			while (fgets(buffer, 256, fp)) {
+				parse_string(buffer, label, operator_asm, operand, comment);
+				if (!strcmp(operator_asm, "MEND") || !strcmp(operator_asm, "mend")) {
+					break;
+				}
+				///////////////////////////////////
+				if (current->begin_code == NULL) {
+					current->begin_code = malloc(sizeof(struct list_code));
+					current->begin_code->next = NULL;
+					current_code = current->begin_code;
+					//current_code->next = NULL;
+				}
+				else {
+					current_code = current->begin_code;
+					while (current_code->next != NULL) {
+						current_code = current_code->next;
+					}
+					////////////////// *
+					current_code->next = malloc(sizeof(struct list_code));
+					current_code = current_code->next;
+					current_code->next = NULL;
+				}
+				current_code->label = NULL;
+				current_code->operand = NULL;
+				current_code->operator_asm = NULL;
+				if (strlen(label) > 1) {
+					current_code->label = malloc(strlen(label));
+				}
+				current_code->operator_asm = malloc(strlen(operator_asm));
 				
-				for (unsigned int prev_size = 0, i = 0; i < strlen(operand); i++) {
-					if (!type && operand[i] == '&') {
-						type = true;
-					}
-					if (operand[i] == ',' || (i == strlen(operand) - 1)) {
-						size_of_operand = (i == strlen(operand) - 1) ? (i - prev_size + 1) : (i - prev_size);
-						char* temp_word = (char*)malloc(size_of_operand + 1);
-						printf("00000000000000\n");
-						memset(temp_word, '0', size_of_operand + 1);
-						for (int k = 0, j = prev_size; k < size_of_operand; k++, j++) {
-							temp_word[k] = operand[j];
-						}
-						temp_word[size_of_operand] = '\0';
-						prev_size = i + 2;
+				if (strlen(label) > 1) {
+					memset(current_code->label, '0', strlen(label));
+				}
+				memset(current_code->operator_asm, '0', strlen(operator_asm));
+				
+				if (strlen(label) > 1) {
+					strcpy_s(current_code->label, strlen(label) + 1, label);
+				}
+				strcpy_s(current_code->operator_asm, strlen(operator_asm) + 1, operator_asm);
+				//strcpy_s(current_code->operand, strlen(operand) + 1, operand);
 
-						macro[hash_table_element_number].formal_operands[count] = temp_word;// malloc(sizeof(char) * 10);
-						//strcpy_s(macro[hash_table_element_number].formal_operands[count], 9, temp_word);
-						printf("%s *********************\n", macro[hash_table_element_number].formal_operands[count]);
-
-						type = false;
-						//free(temp_word);
-						macro[hash_table_element_number].count_of_arugments++;
-						count++;
+				//current_code->next = NULL;
+				bool operand_should_be_replaced = false;
+				for (int i = 0; i < current->count_of_arugments; i++) {
+					if (strstr(operand, current->formal_operands[i]) != NULL) {
+						printf("triggered\n");
+						char* temp_str = (char*)malloc(sizeof(char*) * 10);
+						sprintf(temp_str, "$%d\0", i);
+						current_code->operand = temp_str;
+						operand_should_be_replaced = true;
+						break;
 					}
 				}
-				for (++count; count < 10; count++) {
-					//macro[hash_table_element_number].formal_operands[count] =NULL;
-					//memset(macro[hash_table_element_number].formal_operands[count], 0, 10);
+				if (!operand_should_be_replaced) {
+					//current->begin_code->operand = malloc(strlen(operand));
+					//memset(current->begin_code->operand, '0', strlen(operand));
+					current_code->operand = malloc(strlen(operand));
+					strcpy_s(current_code->operand, strlen(operand) + 1, operand);
 				}
-
+				printf("^^^^^^^^^^^^^^^^^^^^^^ %s %s\n", current_code->operand, current_code->operator_asm);
 				memset(label, 0, sizeof(label));
 				memset(operator_asm, 0, sizeof(operator_asm));
 				memset(operand, 0, sizeof(operand));
 				memset(comment, 0, sizeof(comment));
-
-				while (fgets(buffer, 256, fp)) {
-					parse_string(buffer, label, operator_asm, operand, comment);
-					if (!strcmp(operator_asm, "MEND") || !strcmp(operator_asm, "mend")) {
-						break;
-					}
-					
-					if (macro[hash_table_element_number].begin_code == NULL) {
-						macro[hash_table_element_number].begin_code = malloc(sizeof(struct list_code));
-						macro[hash_table_element_number].begin_code->label = NULL;
-						//////////////////////////////////////////////////
-						if (strlen(label) > 1) { 
-							macro[hash_table_element_number].begin_code->label = malloc(strlen(label));
-						}
-						macro[hash_table_element_number].begin_code->operator_asm = malloc(strlen(operator_asm));
-						macro[hash_table_element_number].begin_code->operand = malloc(strlen(operand));
-						//////////////////////////////////////////////////
-						if (strlen(label) > 1) {
-							memset(macro[hash_table_element_number].begin_code->label, '0', strlen(label));
-						}
-						memset(macro[hash_table_element_number].begin_code->operator_asm, '0', strlen(operator_asm));
-						memset(macro[hash_table_element_number].begin_code->operand, '0',	strlen(operand));
-						//////////////////////////////////////////////////
-						if (strlen(label) > 1) {
-							strcpy_s(macro[hash_table_element_number].begin_code->label, strlen(label) + 1, label);
-						}
-						strcpy_s(macro[hash_table_element_number].begin_code->operator_asm, strlen(operator_asm) + 1, operator_asm);
-						bool operand_should_be_replaced = false;
-						for (int i = 0; i < macro[hash_table_element_number].count_of_arugments; i++) {
-							if (strstr(operand, macro[hash_table_element_number].formal_operands[i]) != NULL) {
-								printf("triggered\n");
-								char* temp_str = (char*)malloc(sizeof(char*) * 10);
-								sprintf(temp_str, "$%d", i);
-								macro[hash_table_element_number].begin_code->operand = temp_str;
-								operand_should_be_replaced = true;
-								break;
-							}
-						}
-						if (!operand_should_be_replaced) {
-							strcpy_s(macro[hash_table_element_number].begin_code->operand, strlen(operand) + 1, operand);
-						}
-						macro[hash_table_element_number].begin_code->next = NULL;
-					}
-					else {
-						struct list_code* current_code = macro[hash_table_element_number].begin_code;
-						while (current_code->next != NULL) {
-							current_code = current_code->next;
-						}
-
-
-						current_code->next = malloc(sizeof(struct list_code));
-						current_code->next->label = NULL;
-						if (strlen(label) > 1)
-							current_code->next->label = malloc(strlen(label));
-						current_code->next->operator_asm = malloc(strlen(operator_asm));
-						current_code->next->operand		= malloc(strlen(operand));
-
-						if (strlen(label) > 1)
-							memset(current_code->next->label, '0', strlen(label));
-						memset(current_code->next->operator_asm,	'0', strlen(operator_asm));
-						memset(current_code->next->operand,		'0', strlen(operand));
-
-						if (strlen(label) > 1)
-							strcpy_s(current_code->next->label, strlen(operand) + 1, operand);
-						strcpy_s(current_code->next->operator_asm,	strlen(operator_asm) + 1, operator_asm);
-						//strcpy_s(current_code->next->operand,		strlen(operand) + 1, operand);
-
-						bool operand_should_be_replaced = false;
-						for (int i = 0; i < macro[hash_table_element_number].count_of_arugments; i++) {
-							if (strstr(operand, macro[hash_table_element_number].formal_operands[i]) != NULL) {
-								printf("triggered\n");
-								char* temp_str = (char*)malloc(sizeof(char*) * 10);
-								sprintf(temp_str, "$%d", i);
-								current_code->next->operand = temp_str;
-								operand_should_be_replaced = true;
-								break;
-							}
-						}
-						if (!operand_should_be_replaced) {
-							strcpy_s(current_code->next->operand, strlen(operand) + 1, operand);
-						}
-
-						current_code->next->next = NULL;
-					}
-
-					memset(label, 0, sizeof(label));
-					memset(operator_asm, 0, sizeof(operator_asm));
-					memset(operand, 0, sizeof(operand));
-					memset(comment, 0, sizeof(comment));
-
-				}
 			}
+			////////////////////////////////////////////////////////////////////////////////////
 		}
 	}
 	return 1;
@@ -576,8 +429,11 @@ void write(char* name_input, char* name_output) {
 				// поиск макроопределения, есть коллизия
 				else {
 					struct hash_table* current_hash = macro[hash_table_element_number].begin_hash_table;
+					bool found = false;
 					while (current_hash != NULL) {
+						
 						if (current_hash->key == key) {
+							found = true;
 							//printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& %s", op)
 							fprintf(fp_out, "; ");
 							fprintf(fp_out, label);
@@ -588,7 +444,7 @@ void write(char* name_input, char* name_output) {
 							fprintf(fp_out, "\n");
 							struct list_code* current_code = current_hash->begin_code;
 							while (current_code != NULL) {
-								
+
 								if (current_code->label != NULL) {
 									fprintf(fp_out, current_code->label);
 									fprintf(fp_out, ": ");
@@ -602,6 +458,12 @@ void write(char* name_input, char* name_output) {
 							free(current_code);
 						}
 						current_hash = current_hash->next;
+					}
+					if (!found) {
+						fprintf(fp_out, operator_asm);
+						fprintf(fp_out, " ");
+						fprintf(fp_out, operand);
+						fprintf(fp_out, "\n");
 					}
 					free(current_hash);
 				}
@@ -617,7 +479,7 @@ void write(char* name_input, char* name_output) {
 				fprintf(fp_out, "\n");
 			}
 			// иначе нет макроопределения
-			printf("%s\n", operator_asm);
+			//printf("%s\n", operator_asm);
 		}
 		memset(buffer, 0, sizeof(buffer));
 		memset(label, 0, sizeof(label));
@@ -642,12 +504,12 @@ void debug_print() {
 
 			struct list_code* current_code = macro[i].begin_code;
 			while (current_code != NULL) {
-				printf("%s %s\n", current_code->operator_asm, current_code->operand);
+				printf("+++++++++ %s %s\n", current_code->operator_asm, current_code->operand);
 				current_code = current_code->next;
 			}
 
 			if (macro[i].begin_hash_table != NULL) {
-				printf("\n");
+				printf("111111111111111111111111111111111111111111111111111111111111111111111 %p\n", macro[i].begin_hash_table);
 				struct hash_table* current_hash = macro[i].begin_hash_table;
 				while (current_hash != NULL) {
 					printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
@@ -660,12 +522,15 @@ void debug_print() {
 					printf("\ncode:\n");
 					struct list_code* current_code = current_hash->begin_code;
 					while (current_code != NULL) {
-						printf("%s %s\n", current_code->operator_asm, current_code->operand);
+						printf("----------- %s %s\n", current_code->operator_asm, current_code->operand);
 						current_code = current_code->next;
 					}
+					free(current_code);
 					current_hash = current_hash->next;
 					printf("\n");
+
 				}
+				free(current_hash);
 			}
 		}
 	}
@@ -673,13 +538,14 @@ void debug_print() {
 
 void main() {
 	for (unsigned int i = 0; i < hash_table_size; i++) {
-		macro[i].begin_code			= NULL;
-		macro[i].begin_hash_table	= NULL;
+		macro[i].begin_code = NULL;
+		macro[i].begin_hash_table = NULL;
+		macro[i].next = NULL;
 
 		macro[i].key = 0;
 		memset(macro[i].name, '0', 15);
 	}
-	
+
 
 	if (read("test.asm")) {
 		debug_print();
