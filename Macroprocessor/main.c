@@ -201,7 +201,7 @@ int read(unsigned char* name) {
 			unsigned short key = key_combine(label);
 			unsigned int hash_table_element_number = hash(key);
 			// обработка коллизии
-			struct hash_table* current = NULL;
+			struct hash_table* current_hash = NULL;
 			if (macro[hash_table_element_number].key != 0) {
 
 				// коллизия встретилась впервые
@@ -213,39 +213,39 @@ int read(unsigned char* name) {
 					memset(macro[hash_table_element_number].begin_hash_table->name, '0', 15);
 					macro[hash_table_element_number].begin_hash_table->next = NULL;
 					macro[hash_table_element_number].begin_hash_table->formal_operands = NULL;
-					current = macro[hash_table_element_number].begin_hash_table;
+					current_hash = macro[hash_table_element_number].begin_hash_table;
 				}
 				// коллизия уже была раньше
 				else {
-					current = macro[hash_table_element_number].begin_hash_table;
-					while (current->next != NULL) {
-						current = current->next;
+					current_hash = macro[hash_table_element_number].begin_hash_table;
+					while (current_hash->next != NULL) {
+						current_hash = current_hash->next;
 					}
-					current->next = NULL;
-					current->next = malloc(sizeof(struct hash_table));
-					current->next->begin_code = NULL;
-					current->next->begin_hash_table = NULL;
-					current->next->count_of_arguments = 0;
-					current->next->formal_operands = NULL;
-					current->next->key = 0;
-					memset(current->next->name, 0, 15);
-					current = current->next;
-					current->next = NULL;
+					current_hash->next = NULL;
+					current_hash->next = malloc(sizeof(struct hash_table));
+					current_hash->next->begin_code = NULL;
+					current_hash->next->begin_hash_table = NULL;
+					current_hash->next->count_of_arguments = 0;
+					current_hash->next->formal_operands = NULL;
+					current_hash->next->key = 0;
+					memset(current_hash->next->name, 0, 15);
+					current_hash = current_hash->next;
+					current_hash->next = NULL;
 				}
 			}
 			else {
-				current = &macro[hash_table_element_number];
+				current_hash = &macro[hash_table_element_number];
 			}
 			// сохранение имени и параметров макроопределения
-			strcpy_s(current->name, strlen(label) + 1, label);
-			current->key = key;
+			strcpy_s(current_hash->name, strlen(label) + 1, label);
+			current_hash->key = key;
 			unsigned int size_of_operand;
-			current->formal_operands = NULL;
-			current->formal_operands = (char**)realloc(current->formal_operands, sizeof(char*) * (count_of_args + 1));
+			current_hash->formal_operands = NULL;
+			current_hash->formal_operands = (char**)realloc(current_hash->formal_operands, sizeof(char*) * (count_of_args + 1));
 			for (int i = 0; i < count_of_args + 1; i++) {
-				current->formal_operands[i] = NULL;
+				current_hash->formal_operands[i] = NULL;
 			}
-			current->count_of_arguments = 0;
+			current_hash->count_of_arguments = 0;
 
 			for (unsigned int prev_size = 0, i = 0; i < strlen(operand); i++) {
 				if (operand[i] == ',' || (i == strlen(operand) - 1)) {
@@ -257,9 +257,9 @@ int read(unsigned char* name) {
 					}
 					temp_word[size_of_operand] = '\0';
 					prev_size = i + 2;
-					current->formal_operands[count] = temp_word;
+					current_hash->formal_operands[count] = temp_word;
 					count++;
-					current->count_of_arguments++;
+					current_hash->count_of_arguments++;
 					temp_word = NULL;
 				}
 			}
@@ -275,13 +275,13 @@ int read(unsigned char* name) {
 				if (!strcmp(operator_asm, "MEND") || !strcmp(operator_asm, "mend")) {
 					break;
 				}
-				if (current->begin_code == NULL) {
-					current->begin_code = malloc(sizeof(struct list_code));
-					current->begin_code->next = NULL;
-					current_code = current->begin_code;
+				if (current_hash->begin_code == NULL) {
+					current_hash->begin_code = malloc(sizeof(struct list_code));
+					current_hash->begin_code->next = NULL;
+					current_code = current_hash->begin_code;
 				}
 				else {
-					current_code = current->begin_code;
+					current_code = current_hash->begin_code;
 					while (current_code->next != NULL) {
 						current_code = current_code->next;
 					}
@@ -305,8 +305,8 @@ int read(unsigned char* name) {
 
 				// сохранение формального параметра в виде $n
 				bool operand_should_be_replaced = false;
-				for (int i = 0; i < current->count_of_arguments; i++) {
-					if (strstr(operand, current->formal_operands[i]) != NULL) {
+				for (int i = 0; i < current_hash->count_of_arguments; i++) {
+					if (strstr(operand, current_hash->formal_operands[i]) != NULL) {
 						char* temp_str = (char*)malloc(sizeof(char*) * 10);
 						sprintf(temp_str, "$%d\0", i);
 						char* new_operand = malloc(sizeof(char) * strlen(operand + 1));
