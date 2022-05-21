@@ -237,7 +237,7 @@ int read(unsigned char* name) {
 				current_hash = &macro[hash_table_element_number];
 			}
 			// сохранение имени и параметров макроопределения
-			strcpy_s(current_hash->name, strlen(label) + 1, label);
+			strcpy(current_hash->name, label);
 			current_hash->key = key;
 			unsigned int size_of_operand;
 			current_hash->formal_operands = NULL;
@@ -295,12 +295,12 @@ int read(unsigned char* name) {
 
 				current_code->operator_asm = malloc(strlen(operator_asm));
 				memset(current_code->operator_asm, '0', strlen(operator_asm));
-				strcpy_s(current_code->operator_asm, strlen(operator_asm) + 1, operator_asm);
+				strcpy(current_code->operator_asm, operator_asm);
 
 				if (strlen(label) > 0) {
 					current_code->label = malloc(strlen(label));
 					memset(current_code->label, '0', strlen(label));
-					strcpy_s(current_code->label, strlen(label) + 1, label);
+					strcpy(current_code->label, label);
 				}
 
 				// сохранение формального параметра в виде $n
@@ -308,7 +308,7 @@ int read(unsigned char* name) {
 				for (int i = 0; i < current_hash->count_of_arguments; i++) {
 					if (strstr(operand, current_hash->formal_operands[i]) != NULL) {
 						char* temp_str = (char*)malloc(sizeof(char*) * 10);
-						sprintf(temp_str, "$%d\0", i);
+						sprintf(temp_str, "$%d", i);
 						char* new_operand = malloc(sizeof(char) * strlen(operand + 1));
 						memset(new_operand, 0, strlen(operand + 1));
 						// замена формального параметра на запись $n
@@ -343,7 +343,7 @@ int read(unsigned char* name) {
 				if (!operand_should_be_replaced) {
 
 					current_code->operand = malloc(strlen(operand));
-					strcpy_s(current_code->operand, strlen(operand) + 1, operand);
+					strcpy(current_code->operand, operand);
 				}
 				memset(label, 0, sizeof(label));
 				memset(operator_asm, 0, sizeof(operator_asm));
