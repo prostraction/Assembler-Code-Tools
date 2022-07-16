@@ -6,7 +6,17 @@
 
 Macrodefinition:
 ```
-Macroname *MACRO* &argument1, &argument2 ... &argumentN
+Macroname MACRO &argument1, &argument2 ... &argumentN
 ...
-*MEND*
+MEND
 ```
+
+Where:
+
+Macroname — name of macrodefintion;
+
+MACRO — begin of macrodefinition;
+
+MEND — end of macrodefinition;
+
+&argument — macrodefinition's argument.
