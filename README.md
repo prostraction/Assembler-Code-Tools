@@ -2,12 +2,11 @@
 System Programming
 
 Compiler:
-
+<sub>
 cd Compiler/src
-
 gcc -o ../bin/compiler compiler.c
-
 ./../bin/compiler
+</sub>
 
 Macroprocessor:
 
