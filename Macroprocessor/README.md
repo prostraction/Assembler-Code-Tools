@@ -6,7 +6,7 @@
 
 Macrodefinition:
 ```
-{Macroname} MACRO &argument1, &argument2 ... &argumentN
+Macroname *MACRO* &argument1, &argument2 ... &argumentN
 ...
-MEND
+*MEND*
 ```
