@@ -767,12 +767,20 @@ int main()
 		t[i].referenced_by = M + 1;
 		memset(t[i].mnemonic, 0, 20);
 	}
+<<<<<<< HEAD:Macroprocessor/main.c
 	struct table name_t[M];
 	for (int i = 0; i < M; i++)
 	{
 		name_t[i].hash = 0;
 		name_t[i].referenced_by = M + 1;
 		memset(name_t[i].mnemonic, 0, 20);
+=======
+
+
+	if (read("input.asm")) {
+		debug_print();
+		write("input.asm", "output.asm");
+>>>>>>> 2d2c413 (Separate programs):Macroprocessor/macroproc.c
 	}
 	char s[20];
 	int start_counter = 0;
