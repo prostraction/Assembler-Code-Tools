@@ -574,7 +574,7 @@ void parse_file_second_time(char* name, int* counter, struct table t[M], struct 
 		return;
 	}
 	FILE* out;
-	if (!(out = fopen("out", "w")))
+	if (!(out = fopen("../output/out", "w")))
 	{
 		printf("Unable to open %s\n", "out");
 		return;
@@ -910,7 +910,7 @@ int main()
 	printf("\n---	print table	---\n");
 	print_table(t);
 	printf("\n---	parse file	---\n");
-	parse_file("input.asm", counter, t, name_t);
+	parse_file("../asm_files/input.asm", counter, t, name_t);
 	printf("\n");
 	printf("\n---	print name table	---\n");
 	print_name_table(name_t);
@@ -920,9 +920,9 @@ int main()
 	end_adr = *counter + 3;
 	*counter = 0;
 	printf("---	parse second file	---\n");
-	parse_file_second_time("input.asm", counter, t, name_t, counter_for_second_parse);
+	parse_file_second_time("../asm_files/input.asm", counter, t, name_t, counter_for_second_parse);
 	printf("\n");
-	print_log("out");
+	print_log("../output/out");
 	printf("\n");
 
     remove("log");
