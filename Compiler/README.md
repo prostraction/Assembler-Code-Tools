@@ -1,11 +1,14 @@
-*This program does assembler code compilation.**
+*This program does assembler code compilation.*
 
+
+```
 Input: asm_files/input.asm
 
 Output: output/out
+```
 
 
-Defined directives: begin, end, db, dw, rb, rw.
+Defined directives: `begin, end, db, dw, rb, rw`.
 
 Compiled code is written in Intel HEX format. Every line has next definition (size in bytes): 
 
