@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 begin 4096
 st: ldx  numb ; загрузить в регистр x
 	lda  fact 	  ; загрузить в регистр a
@@ -59,4 +58,3 @@ RETADR:	RESW 1
 LENGTH:	RESW 1
 BUFFER:	RESB 4096
 		END FIRST
->>>>>>> 2d2c413 (Separate programs)
