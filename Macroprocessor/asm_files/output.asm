@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+begin 4096
+st: ldx numb ; загрузить в регистр x
+lda fact 
+comp two  
+jlt e
+loop: mul numb
+sub fact
+comp one
+jeq loop  
+rsub 
+one: dw 1
+two: dw 2
+numb: dw 1
+fact: dw 5
+e: rsub ; метка конца программы
+end st
+======= 
 COPY: START 0
 FISRT: STL RETADR
 ; CLOOP: RDBUFF F1, BUFFER, LENGTH
@@ -43,3 +61,4 @@ RETADR: RESW 1
 LENGTH: RESW 1
 BUFFER: RESB 4096
 END FIRST
+>>>>>>> 2d2c413 (Separate programs)
