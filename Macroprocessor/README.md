@@ -13,10 +13,10 @@ MEND
 
 Where:
 
-Macroname — name of macrodefintion;
+`Macroname` — name of macrodefintion;
 
-MACRO — begin of macrodefinition;
+`MACRO` — begin of macrodefinition;
 
-MEND — end of macrodefinition;
+`MEND` — end of macrodefinition;
 
-&argument — macrodefinition's argument.
+`&argument` — macrodefinition's argument.
