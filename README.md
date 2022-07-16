@@ -4,7 +4,7 @@ C System Programming labs.
 **Compiler:**
 
 ```
-cd Compiler/src
+cd Assembler-Code-Tools/Compiler/src
 
 gcc -o ../bin/compiler compiler.c
 
@@ -15,7 +15,7 @@ gcc -o ../bin/compiler compiler.c
 **Macroprocessor:**
 
 ```
-cd Macroprocessor/src
+cd Assembler-Code-Tools/Macroprocessor/src
 
 gcc -o ../bin/macroproc maproproc.c
 
