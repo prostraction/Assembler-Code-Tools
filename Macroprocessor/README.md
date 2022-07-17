@@ -4,9 +4,7 @@
 
 `Output: asm_files/output.asm`
 
-
-
-Macrodefinition:
+*Macrodefinition:*
 ```
 Macroname MACRO &argument1, &argument2 ... &argumentN
 ...
